@@ -1,0 +1,39 @@
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    color: white;
+}
+
+
+body {
+    background: linear-gradient(300deg, #6f27b8 , #000000, #3046d6);
+    /* Try other gradients by uncommenting */
+    /* background: linear-gradient(300deg, #001F3F , #00FFFF, #FFFFFF); */
+    /* background: linear-gradient(300deg, #4B0082 ,  #E100FF, #FF0000); */
+    
+    background-size: 180% 180%;
+    animation: gradient-animation 15s ease infinite;
+}
+
+  
+  @keyframes gradient-animation {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+
+.navigbar {
+    background-color: #000000;
+}
+
+.navlogo {
+    height: 65px;
+    padding-right: 20px;
+}
