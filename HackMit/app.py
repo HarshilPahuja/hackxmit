@@ -10,10 +10,15 @@ if not os.path.exists(UPLOAD_FOLDER):
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# Route to render HTML
+# Route to render home.html
 @app.route('/')
 def home():
     return render_template('home.html')
+
+# Route to render upload.html
+@app.route('/upload')
+def upload():
+    return render_template('upload.html')
 
 # Route to handle file uploads
 @app.route('/upload', methods=['POST'])
