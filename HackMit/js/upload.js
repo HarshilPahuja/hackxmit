@@ -33,3 +33,13 @@ dropZone.addEventListener('drop', (event) => {
     fileNameDisplay.textContent = `Selected file: ${fileInput.files[0].name}`;
   }
 });
+
+// ✅ Auto-dismiss alerts after 4 seconds
+setTimeout(() => {
+  const alerts = document.querySelectorAll('.alert');
+  alerts.forEach(alert => {
+    const bsAlert = new bootstrap.Alert(alert);
+    bsAlert.close();
+  });
+}, 4000);
+
