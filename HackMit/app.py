@@ -1,40 +1,61 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, flash
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
+app.secret_key = 'supersecretkey'  # Needed for flashing messages
 
-# Create an 'uploads' folder if it doesn't exist
+# Allowed file extensions
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'mp4', 'mov'}
+
+# Max file size (in bytes) – example: 20 MB
+MAX_FILE_SIZE = 20 * 1024 * 1024  
+
 UPLOAD_FOLDER = 'uploads'
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['MAX_CONTENT_LENGTH'] = MAX_FILE_SIZE  # Flask setting for file size limit
 
-# Route to render home.html
+# Helper to check allowed file type
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 @app.route('/')
 def home():
     return render_template('home.html')
 
-# Route to render upload.html
-@app.route('/upload')
+@app.route('/upload', methods=['GET', 'POST'])
 def upload():
-    return render_template('upload.html')
+    if request.method == 'POST':
+        # Check if file is in request
+        if 'file' not in request.files:
+            flash('No file part', 'danger')
+            return redirect(request.url)
 
-# Route to handle file uploads
-@app.route('/upload', methods=['POST'])
-def upload_file():
-    if 'file' not in request.files:
-        return 'No file part'
-    
-    file = request.files['file']
-    
-    if file.filename == '':
-        return 'No selected file'
-    
-    if file:
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
-        file.save(filepath)
-        return f'File uploaded successfully: {file.filename}'
+        file = request.files['file']
+
+        if file.filename == '':
+            flash('No selected file', 'danger')
+            return redirect(request.url)
+
+        if file and allowed_file(file.filename):
+            if request.content_length > MAX_FILE_SIZE:
+                flash('File size exceeds 20 MB limit', 'danger')
+                return redirect(request.url)
+
+            filename = secure_filename(file.filename)  # Prevent directory traversal attacks
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(filepath)
+
+            flash(f'File "{filename}" uploaded and metadata stored!', 'success')
+            return redirect(url_for('upload'))
+
+        flash('Invalid file type! Allowed types: PNG, JPG, JPEG, GIF, MP4, MOV', 'danger')
+        return redirect(request.url)
+
+    return render_template('upload.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
