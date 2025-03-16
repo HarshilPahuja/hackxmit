@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
@@ -11,14 +11,15 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'mp4', 'mov'}
 # Max file size (in bytes) – example: 20 MB
 MAX_FILE_SIZE = 20 * 1024 * 1024  
 
-UPLOAD_FOLDER = 'uploads'
+# Uploads folder (outside static)
+UPLOAD_FOLDER = os.path.join(os.getcwd(), 'uploads')  # Absolute path
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = MAX_FILE_SIZE  # Flask setting for file size limit
 
-# Helper to check allowed file type
+# Helper function to check allowed file types
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
@@ -29,7 +30,6 @@ def home():
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
     if request.method == 'POST':
-        # Check if file is in request
         if 'file' not in request.files:
             flash('No file part', 'danger')
             return redirect(request.url)
@@ -41,21 +41,21 @@ def upload():
             return redirect(request.url)
 
         if file and allowed_file(file.filename):
-            if request.content_length > MAX_FILE_SIZE:
-                flash('File size exceeds 20 MB limit', 'danger')
-                return redirect(request.url)
-
             filename = secure_filename(file.filename)  # Prevent directory traversal attacks
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(filepath)
 
-            flash(f'File "{filename}" uploaded and metadata stored!', 'success')
-            return redirect(url_for('upload'))
+            return render_template('upload.html', filename=filename)
 
         flash('Invalid file type! Allowed types: PNG, JPG, JPEG, GIF, MP4, MOV', 'danger')
         return redirect(request.url)
 
     return render_template('upload.html')
+
+# Route to serve uploaded files dynamically
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 if __name__ == '__main__':
     app.run(debug=True)
