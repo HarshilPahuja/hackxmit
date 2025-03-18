@@ -22,7 +22,7 @@ Deepfake-Detection/
 
 Notes
 
-deepfakedetection.py is a pre-trained model script and cannot be executed directly.
+-deepfakedetection.py is a pre-trained model script and cannot be executed directly.
 
-app.py is the main Flask file that handles routing and file uploads. Ensure Flask is installed before running it.
+-app.py is the main Flask file that handles routing and file uploads. Ensure Flask is installed before running it.
 
